@@ -1,0 +1,32 @@
+service: tfm-slm
+
+package:
+  patterns:
+    - '!**'
+    - 'handler.py'
+
+provider:
+  name: aws
+  runtime: python3.8
+  iam:
+    role: arn:aws:iam::${aws:accountId}:role/LabRole
+    
+layers:
+  requirements:
+    package:
+      artifact: python-requirements.zip
+    name: ${self:service}-requirements-layer-${sls:stage}
+    description: Python requirements
+    compatibleRuntimes:
+      - python3.8
+    
+functions:
+  clasificar:
+    handler: handler.clasificar
+    layers:
+      - {Ref: RequirementsLambdaLayer}
+    events:
+      - http:
+          path: clasificar
+          method: post
+          cors: true
